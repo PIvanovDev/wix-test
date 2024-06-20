@@ -7,14 +7,9 @@ import { reactive } from 'vue'
 const props = defineProps(['product', 'onClose', 'isNew'])
 const productsStore = useProductsStore()
 
-console.log({...props.product})
-
 const form = reactive<TProduct>({...props.product})
 
-console.log(form)
-
 const onSubmit = async () => {
-  console.log('submit!')
   if(props.isNew) {
     await productsStore.createProduct({ ...form })
   } else {

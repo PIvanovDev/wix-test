@@ -94,7 +94,6 @@ export class ProductsProvider implements IDataProvider<TProduct> {
   }
 
   updateVariants(productId: string, variants: Partial<TProductVariant>[]): Promise<TProductVariant[]> {
-    console.log(`/stores/v1/products/${productId}/variants`)
     return this.httpClient.patch<TProductVariant[], { variants:  Partial<TProductVariant>[]}>(`/stores/v1/products/${productId}/variants`, { variants });
   }
 
@@ -125,8 +124,6 @@ export class ProductsProvider implements IDataProvider<TProduct> {
         paging: options.query.paging
       }
     } 
-
-    console.log('payload', payload);
 
     if(!('paging' in options.query)) {
       qs = this.httpClient.buildQueryString({

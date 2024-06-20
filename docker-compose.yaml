@@ -1,0 +1,37 @@
+volumes:
+  redis-volume: {}
+
+version: '3.1'
+services:
+  backend:
+    build: ./wix-backend
+    ports:
+      - 3099:3000
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - WIX_API_URL=https://www.wixapis.com
+      - WIX_SITE_ID=${WIX_SITE_ID}
+      - WIX_API_TOKEN=${WIX_API_TOKEN}
+  frontend:
+    build: ./wix-frontend
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cp -r /app/* /source/
+    volumes:
+      - ./wix-frontend/build:/source/
+  nginx:
+    image: nginx:latest
+    restart: always
+    links:
+      - backend
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./wix-frontend/build:/var/www/html

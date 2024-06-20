@@ -44,8 +44,6 @@ export abstract class HttpClient implements IHttpClient {
       headers
     }
 
-    console.log(`${this.apiURL}${path}`);
-
     const req = https.request(`${this.apiURL}${path}`, options, async (res) => {
       let data = '';
       for await (const chunk of res) {

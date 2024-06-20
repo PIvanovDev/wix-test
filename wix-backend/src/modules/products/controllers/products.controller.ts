@@ -20,7 +20,6 @@ export class ProductsController {
   @UseInterceptors(new FormatListArgsInterceptor(['query.id']))
   @UsePipes(new JoiValidationPipe(ProductsValidationService.preList))
   list(@Query() query: TProductListOptions) {
-    console.log(query);
     return this.productsService.list(query);
   }
 

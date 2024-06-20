@@ -4,6 +4,8 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { buildQueryString } from '../utils'
 
+const API_URL = import.meta.env.VITE_API_URL || window.location.origin
+
 export type TProductVariant = {
   id?: string;
   price: number;
@@ -64,14 +66,12 @@ export const useProductsStore = defineStore('products', () => {
   })
 
   function loadProducts(...args: any[]) {
-    console.log('loadProducts', args)
-
     const offset = (pagination.value.page - 1) * pagination.value.pageSize
     const limit = pagination.value.pageSize 
 
     const qs = buildQueryString({ ...filters, offset, limit })
 
-    return axios.get<TProductResponse>(`http://localhost:3000/products${qs}`)
+    return axios.get<TProductResponse>(`${API_URL}/api/products${qs}`)
       .then(response => {
 
         products.value = response.data.products.map(product => ({
@@ -84,8 +84,6 @@ export const useProductsStore = defineStore('products', () => {
           })) : []
         }));
 
-        console.log(products.value)
-
         pagination.value.total = response.data.totalResults
       })
       .catch(error => {
@@ -94,42 +92,27 @@ export const useProductsStore = defineStore('products', () => {
   }
 
   function updateProduct(product: TProduct) {
-    console.log('updateProduct', product)
-
-    return axios.patch(`http://localhost:3000/products/${product.id}`, product)
-      .then(response => {
-        console.log(response)
-      })
+    return axios.patch(`${API_URL}/api/products/${product.id}`, product)
       .catch(error => {
         console.error(error)
       })
   }
 
   function createProduct(product: TProduct) {
-    console.log('createProduct', product)
-
-    return axios.post(`http://localhost:3000/products`, product)
-      .then(response => {
-        console.log(response)
-      })
+    return axios.post(`${API_URL}/api/products`, product)
       .catch(error => {
         console.error(error)
       })
   }
 
   function handlePageChange(page: number) {
-    console.log('handlePageChange', page)
     pagination.value.page = page
-
     loadProducts()
   }
 
   function deleteProduct(product: TProduct) {
-    console.log('deleteProduct', product)
-
-    return axios.delete(`http://localhost:3000/products/${product.id}`)
+    return axios.delete(`${API_URL}/api/products/${product.id}`)
       .then(response => {
-        console.log(response)
         loadProducts()
       })
       .catch(error => {
