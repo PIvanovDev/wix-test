@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import shortId from 'shortid'
 import { ref, onMounted } from 'vue'
-import { useProductsStore } from '@/stores/products'
+import { useProductsStore, type TProduct } from '@/stores/products'
 
 import { reactive } from 'vue'
 
@@ -10,7 +9,7 @@ const productsStore = useProductsStore()
 
 console.log({...props.product})
 
-const form = reactive({...props.product})
+const form = reactive<TProduct>({...props.product})
 
 console.log(form)
 
@@ -25,11 +24,10 @@ const onSubmit = async () => {
 }
 
 const addVariant = () => {
-  form.variants.push({ price: 0, choices: { Size: '', Color: '' } })
+  form.variants.push({ id: '', price: 0, choices: { Size: '', Color: '' }, variant: { priceData: { price: 0 } } })
 }
 
-const removeVariant = (id) => {
-  const index = form.variants.findIndex(v => v.id === id)
+const removeVariant = (index: number) => {
   if(index === -1) return
 
   form.variants.splice(index, 1)
@@ -61,7 +59,7 @@ const removeVariant = (id) => {
           <el-button type="primary" @click="addVariant">Add variant</el-button>
         </div>
         <div>
-          <div v-for="v in form.variants">
+          <div v-for="(v, i) in form.variants">
             <el-form-item  label="Price">
               <el-input type="number" v-model="v.price" />
             </el-form-item>
@@ -72,7 +70,7 @@ const removeVariant = (id) => {
               <el-input v-model="v.choices.Size" />
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" @click="removeVariant(v.id)">Add variant</el-button>
+              <el-button type="danger" @click="removeVariant(i)">Delete Variant</el-button>
             </el-form-item>
           </div>
         </div>

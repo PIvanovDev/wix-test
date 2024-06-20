@@ -1,12 +1,18 @@
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 import axios from 'axios'
+import { buildQueryString } from '../utils'
 
 export type TProductVariant = {
-  id: string;
+  id?: string;
   price: number;
   choices: Record<'Size' | 'Color', string>;
+  variant: {
+    priceData: {
+      price: number;
+    };
+  };
 }
 
 export type TProduct = {
@@ -31,7 +37,7 @@ export type TProduct = {
 
 type TProductResponse = {
   products: TProduct[]
-  total: number
+  totalResults: number
 }
 
 type TPagination = {
@@ -40,8 +46,16 @@ type TPagination = {
   total: number
 }
 
-export const useProductsStore = defineStore('counter', () => {
+type TProductFilters = {
+  name?: string
+  startPrice?: number
+  endPrice?: number
+}
+
+export const useProductsStore = defineStore('products', () => {
   const products = ref<TProduct[]>([])
+
+  const filters = reactive<TProductFilters>({})
 
   const pagination = ref<TPagination>({
     page: 1,
@@ -55,12 +69,24 @@ export const useProductsStore = defineStore('counter', () => {
     const offset = (pagination.value.page - 1) * pagination.value.pageSize
     const limit = pagination.value.pageSize 
 
-    axios.get<TProductResponse>(`http://localhost:3000/products?offset=${offset}&limit=${limit}`)
-      .then(response => {
-        console.log(response)
+    const qs = buildQueryString({ ...filters, offset, limit })
 
-        products.value = response.data.products
-        pagination.value.total = response.data.total
+    return axios.get<TProductResponse>(`http://localhost:3000/products${qs}`)
+      .then(response => {
+
+        products.value = response.data.products.map(product => ({
+          ...product,
+          children: product.manageVariants ? product.variants.map(variant => ({
+            ...product,
+            name: `${product.name} - ${variant.choices.Color} - ${variant.choices.Size}`,
+            priceData: variant.variant.priceData,
+            children: void 0
+          })) : []
+        }));
+
+        console.log(products.value)
+
+        pagination.value.total = response.data.totalResults
       })
       .catch(error => {
         console.error(error)
@@ -70,7 +96,7 @@ export const useProductsStore = defineStore('counter', () => {
   function updateProduct(product: TProduct) {
     console.log('updateProduct', product)
 
-    axios.patch(`http://localhost:3000/products/${product.id}`, product)
+    return axios.patch(`http://localhost:3000/products/${product.id}`, product)
       .then(response => {
         console.log(response)
       })
@@ -82,7 +108,7 @@ export const useProductsStore = defineStore('counter', () => {
   function createProduct(product: TProduct) {
     console.log('createProduct', product)
 
-    axios.post(`http://localhost:3000/products`, product)
+    return axios.post(`http://localhost:3000/products`, product)
       .then(response => {
         console.log(response)
       })
@@ -101,7 +127,7 @@ export const useProductsStore = defineStore('counter', () => {
   function deleteProduct(product: TProduct) {
     console.log('deleteProduct', product)
 
-    axios.delete(`http://localhost:3000/products/${product.id}`)
+    return axios.delete(`http://localhost:3000/products/${product.id}`)
       .then(response => {
         console.log(response)
         loadProducts()
@@ -110,11 +136,11 @@ export const useProductsStore = defineStore('counter', () => {
         console.error(error)
       })
   }
- 
 
   return { 
     products,
     pagination,
+    filters,
     loadProducts, 
     updateProduct,
     createProduct,

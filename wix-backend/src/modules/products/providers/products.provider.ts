@@ -1,6 +1,6 @@
 import { FilterQuery } from 'mongoose';
 import { IDataProvider, IHttpClient, TPaginationOptions, TSearchOptions } from "src/utils/types";
-import { TProduct, TProductVariant } from "../types";
+import { TImageUrl, TProduct, TProductVariant } from "../types";
 
 
 const likeFields = [
@@ -48,6 +48,7 @@ type TRequestOptions<T> = Omit<TSearchOptions<T>, 'query'> & {
 export interface ProductsDataProvider {
   updateVariants(productId: string, variants: Partial<TProductVariant>[]): Promise<TProductVariant[]>;
   resetVariants(productId: string): Promise<unknown>;
+  addMedia(productId: string, media: TImageUrl[]): Promise<unknown>;
 }
 
 export class ProductsProvider implements IDataProvider<TProduct> {
@@ -73,7 +74,7 @@ export class ProductsProvider implements IDataProvider<TProduct> {
 
           if(betweenFields.includes(key)) {
             return Object.assign(filterOptions, {
-              price: { $gte: options.startPrice,  $lte: options.endPrice },
+              $and: [{ price: { $gte: options.startPrice }}, { price: { $lte: options.endPrice }}],
             });
           }
         }
@@ -101,8 +102,12 @@ export class ProductsProvider implements IDataProvider<TProduct> {
     return this.httpClient.post(`/stores/v1/products/${productId}/variants/resetToDefault`, {});
   }
 
+  addMedia(productId: string, media: TImageUrl[]): Promise<unknown> {
+    return this.httpClient.post(`/stores/v1/products/${productId}/media`, { media });
+  }
+
   delete(id: string): Promise<TProduct> {
-    return this.httpClient.delete<TProduct>(`${id}`);
+    return this.httpClient.delete<TProduct>(`/stores/v1/products/${id}`);
   }
 
   single(id: string): Promise<TProduct> {
@@ -113,18 +118,21 @@ export class ProductsProvider implements IDataProvider<TProduct> {
 
     let qs = '';
 
+    const payload = { 
+      ...options,
+      query: {
+        filter: JSON.stringify(options.query.filter),
+        paging: options.query.paging
+      }
+    } 
+
+    console.log('payload', payload);
+
     if(!('paging' in options.query)) {
       qs = this.httpClient.buildQueryString({
         limit, offset
       });
     }
-
-    const payload = { 
-      ...options,
-      query: {
-        filter: JSON.stringify(options.query.filter)
-      }
-    } 
 
     return this.httpClient.post<TProduct[], TRequestOptions<TProduct>>(`/stores-reader/v1/products/query${qs}`, payload);
   }

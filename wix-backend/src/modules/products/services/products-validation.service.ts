@@ -1,7 +1,5 @@
 import * as Joi from "joi";
 import { TProduct } from "../types";
-import { TFilterProductOptions } from "../providers/products.provider";
-import { TPaginationOptions } from "src/utils/types";
 import { TProductListOptions } from "./products.service";
 
 const defaults = {
@@ -20,6 +18,13 @@ export class ProductsValidationService {
         price: Joi.number().required(),
       }).required(), 
       productType: Joi.string().required(),
+      media: Joi.object({
+        mainMedia: Joi.object({
+          image: Joi.object({
+            url: Joi.string().required(),
+          }).required(),
+        }).required(),
+      }).required(),
       // inventoryItemId: Joi.number().required(),
       description: Joi.string().required(),
       variants: Joi.array().items(Joi.object({
@@ -41,8 +46,6 @@ export class ProductsValidationService {
         price: Joi.number(),
       }),      
       manageVariants: Joi.boolean(),
-      category: Joi.string(),
-      inventoryItemId: Joi.string(),
       description: Joi.string(),
       variants: Joi.array().items(Joi.object({
         price: Joi.number().required(),
@@ -65,8 +68,6 @@ export class ProductsValidationService {
       price: Joi.number(),
       startPrice: Joi.number(),
       endPrice: Joi.number(),
-      category: Joi.array().items(Joi.string()),
-      inventoryItemId: Joi.string(),
       description: Joi.string(),
       offset: Joi.number(),
       limit: Joi.number()

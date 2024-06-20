@@ -9,17 +9,25 @@ type ProductOption = {
   choices: { value: string }[];
 }
 
+export type TImageUrl = {
+  url: string;
+}
+
 export type TProduct = {
   id: string;
   name: string;
   productType: "physical" | "digital";
-  priceData: {
-    price: number;
-  };
   productOptions: ProductOption[];
   category: string;
-  inventoryItemId: string;
   description: string;
   variants: TProductVariant[];
   manageVariants: boolean;
+  priceData: {
+    price: number;
+  };
+  media: {
+    mainMedia: {
+      image: TImageUrl
+    }
+  },
 };

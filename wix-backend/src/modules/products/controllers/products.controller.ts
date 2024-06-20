@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseInterceptors, Query, UsePipes, UseFilters } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseInterceptors, Query, UsePipes, UseFilters, Delete } from '@nestjs/common';
 import { MorganInterceptor } from 'src/modules/shared/interceptors/morgan.interceptor';
 import { ProductsService, TProductListOptions } from '../services/products.service';
 import { TProduct } from '../types';
@@ -17,7 +17,7 @@ export class ProductsController {
   }
 
   @Get()
-  @UseInterceptors(new FormatListArgsInterceptor(['query.id', 'query.variant', 'query.category']))
+  @UseInterceptors(new FormatListArgsInterceptor(['query.id']))
   @UsePipes(new JoiValidationPipe(ProductsValidationService.preList))
   list(@Query() query: TProductListOptions) {
     console.log(query);
@@ -34,5 +34,10 @@ export class ProductsController {
   @UsePipes(new JoiValidationPipe(ProductsValidationService.preUpdate))
   update(@Param('id') id: string, @Body() payload: Partial<TProduct>) {
     return this.productsService.update(id, payload);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) {
+    return this.productsService.delete(id);
   }
 }

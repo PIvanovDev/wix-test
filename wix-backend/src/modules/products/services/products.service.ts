@@ -44,7 +44,7 @@ export class ProductsService {
         filter,
         paging: { limit, offset }
       },
-      includeVariants: false,
+      includeVariants: true,
       includeHiddenProducts: false,
       includeMerchantSpecificData: false
     }, { limit, offset });
@@ -54,8 +54,18 @@ export class ProductsService {
     return this.productsProvider.single(id);
   }
 
-  create(payload: TProduct): Promise<TProduct> {
-    return this.productsProvider.create(payload);
+  async create(payload: TProduct): Promise<TProduct> {
+    const newProduct = await this.productsProvider.create(payload);
+
+    if(payload.media.mainMedia.image.url) {
+      // @ts-ignore
+      await this.productsProvider.addMedia(newProduct.product.id, [payload.media.mainMedia.image]);
+      // @ts-ignore
+      await this.productsProvider.update(newProduct.product.id, payload);
+    }
+
+    // @ts-ignore
+    return this.single(newProduct.product.id);
   }
 
   async update(id: string, payload: Partial<TProduct>): Promise<TProduct> {
@@ -75,5 +85,12 @@ export class ProductsService {
     await this.productsProvider.update(id, payload);
 
     return this.single(id);
+  }
+
+  async delete(id: string): Promise<TProduct> {
+    const product = await this.productsProvider.single(id);
+    await this.productsProvider.delete(id);
+
+    return product;
   }
 }
