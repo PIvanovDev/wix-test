@@ -1,0 +1,9 @@
+@import './base.css';
+
+.d-flex {
+  display: flex;
+}
+
+.w-100 {
+  width: 100%;
+}

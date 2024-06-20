@@ -1,0 +1,94 @@
+<script setup lang="ts">
+import shortId from 'shortid'
+import { ref, onMounted } from 'vue'
+import { useProductsStore } from '@/stores/products'
+
+import { reactive } from 'vue'
+
+const props = defineProps(['product', 'onClose', 'isNew'])
+const productsStore = useProductsStore()
+
+console.log({...props.product})
+
+const form = reactive({...props.product})
+
+console.log(form)
+
+const onSubmit = async () => {
+  console.log('submit!')
+  if(props.isNew) {
+    await productsStore.createProduct({ ...form })
+  } else {
+    await productsStore.updateProduct({ ...form })
+  }
+  props.onClose(false)
+}
+
+const addVariant = () => {
+  form.variants.push({ price: 0, choices: { Size: '', Color: '' } })
+}
+
+const removeVariant = (id) => {
+  const index = form.variants.findIndex(v => v.id === id)
+  if(index === -1) return
+
+  form.variants.splice(index, 1)
+}
+
+</script>
+
+<template>
+  <div class="d-flex w-100">
+    <el-form :model="form" label-width="auto" >
+      <el-form-item label="Product name">
+        <el-input v-model="form.name" />
+      </el-form-item>
+      <el-form-item label="Product price">
+        <el-input type="number" v-model="form.priceData.price" />
+      </el-form-item>
+      <el-form-item label="Image URL">
+        <el-input type="textarea" v-model="form.media.mainMedia.image.url" />
+      </el-form-item>
+      <el-form-item label="Description">
+        <el-input type="textarea" v-model="form.description" />
+      </el-form-item>
+      <el-form-item label="Variants">
+        <el-switch v-model="form.manageVariants" />
+      </el-form-item>
+      <div v-if="form.manageVariants">
+        <div>
+          <h6>Product variants</h6>
+          <el-button type="primary" @click="addVariant">Add variant</el-button>
+        </div>
+        <div>
+          <div v-for="v in form.variants">
+            <el-form-item  label="Price">
+              <el-input type="number" v-model="v.price" />
+            </el-form-item>
+            <el-form-item  label="Color">
+              <el-input v-model="v.choices.Color" />
+            </el-form-item>
+            <el-form-item  label="Size">
+              <el-input v-model="v.choices.Size" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="danger" @click="removeVariant(v.id)">Add variant</el-button>
+            </el-form-item>
+          </div>
+        </div>
+      </div>
+    </el-form>
+  </div>
+  <div>
+    <el-form-item>
+      <el-button type="primary" @click="onSubmit">Submit</el-button>
+      <el-button @click="onClose(true)">Cancel</el-button>
+    </el-form-item>
+  </div>
+</template>
+
+<style scoped>
+
+
+
+</style>
