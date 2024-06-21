@@ -76,33 +76,31 @@ export const useProductsStore = defineStore('products', () => {
 
         products.value = response.data.products.map(product => ({
           ...product,
-          children: product.manageVariants ? product.variants.map(variant => ({
+          children: product.manageVariants ? product.variants.map((variant, i) => ({
             ...product,
+            id: `${product.id}-${i}`,
             name: `${product.name} - ${variant.choices.Color} - ${variant.choices.Size}`,
             priceData: variant.variant.priceData,
-            children: void 0
+            children: void 0,
+            isChild: true
           })) : []
         }));
 
         pagination.value.total = response.data.totalResults
       })
-      .catch(error => {
-        console.error(error)
-      })
+      .catch(console.error)
   }
 
   function updateProduct(product: TProduct) {
     return axios.patch(`${API_URL}/api/products/${product.id}`, product)
-      .catch(error => {
-        console.error(error)
-      })
+      .catch(console.error)
+      .finally(loadProducts)
   }
 
   function createProduct(product: TProduct) {
     return axios.post(`${API_URL}/api/products`, product)
-      .catch(error => {
-        console.error(error)
-      })
+      .catch(console.error)
+      .finally(loadProducts)
   }
 
   function handlePageChange(page: number) {
@@ -112,12 +110,8 @@ export const useProductsStore = defineStore('products', () => {
 
   function deleteProduct(product: TProduct) {
     return axios.delete(`${API_URL}/api/products/${product.id}`)
-      .then(response => {
-        loadProducts()
-      })
-      .catch(error => {
-        console.error(error)
-      })
+      .catch(console.error)
+      .finally(loadProducts)
   }
 
   return { 

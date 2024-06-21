@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useProductsStore, type TProduct } from '@/stores/products'
 
 import { reactive } from 'vue'
@@ -10,10 +9,16 @@ const productsStore = useProductsStore()
 const form = reactive<TProduct>({...props.product})
 
 const onSubmit = async () => {
+  const payload = { ...form }
+
+  payload.variants.forEach(v => {
+    v.price = v.variant.priceData.price
+  })
+
   if(props.isNew) {
-    await productsStore.createProduct({ ...form })
+    await productsStore.createProduct(payload)
   } else {
-    await productsStore.updateProduct({ ...form })
+    await productsStore.updateProduct(payload)
   }
   props.onClose(false)
 }
@@ -56,7 +61,7 @@ const removeVariant = (index: number) => {
         <div>
           <div v-for="(v, i) in form.variants">
             <el-form-item  label="Price">
-              <el-input type="number" v-model="v.price" />
+              <el-input type="number" v-model="v.variant.priceData.price" />
             </el-form-item>
             <el-form-item  label="Color">
               <el-input v-model="v.choices.Color" />

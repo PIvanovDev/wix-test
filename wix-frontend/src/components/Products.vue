@@ -12,7 +12,7 @@ const isNewProduct = ref(false)
 const currentProduct = ref<Partial<TProduct> | null>(null)
 
 function openModal(product: any) {
-  currentProduct.value = product
+  currentProduct.value = { ...product }
   modalOpened.value = true
 }
 
@@ -102,7 +102,7 @@ const handlePriceRangeChange = (values: number[]) => {
         <el-table-column prop="priceData.formatted.price" label="Price" />
         <el-table-column prop="description" label="Description" >
           <template #default="scope">
-            <div style="display: flex; align-items: center">
+            <div v-show="!scope.row.isChild" style="display: flex; justify-content: space-around">
               <el-icon style="cursor: pointer;" :size="20" @click="openModal({...scope.row})">
                 <Edit />
               </el-icon>
@@ -131,7 +131,9 @@ const handlePriceRangeChange = (values: number[]) => {
       width="30%"
       :before-close="handleCloseModal">
       <template #footer>
-        <ProductForm :product="currentProduct" :isNew="isNewProduct" :onClose="handleCloseModal"/>
+        <div v-if="currentProduct">
+          <ProductForm :product="currentProduct" :isNew="isNewProduct" :onClose="handleCloseModal"/>
+        </div>
       </template>
     </el-dialog>
   </div>
